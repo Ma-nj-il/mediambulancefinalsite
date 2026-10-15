@@ -1,0 +1,18 @@
+# Optional local PostgreSQL for offline development.
+# The default setup uses managed Supabase (see .env.example).
+# This compose file is only for contributors who want a local Postgres playground.
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: resq
+      POSTGRES_PASSWORD: resq-dev-only
+      POSTGRES_DB: resq
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
