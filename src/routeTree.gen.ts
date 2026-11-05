@@ -13,21 +13,34 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DeviceRequestRouteImport } from './routes/device-request'
+import { Route as HospitalPlatformRouteImport } from './routes/hospital-platform'
 import { Route as HospitalsRouteImport } from './routes/hospitals'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminPanelRouteImport } from './routes/admin._panel'
+import { Route as HospitalDashboardRouteImport } from './routes/hospital.dashboard'
 import { Route as HospitalLoginRouteImport } from './routes/hospital.login'
-import { Route as AdminPanelApplicationsRouteImport } from './routes/admin._panel.applications'
+import { Route as ProviderDashboardRouteImport } from './routes/provider.dashboard'
+import { Route as ProviderLoginRouteImport } from './routes/provider.login'
+import { Route as AdminPanelAuditRouteImport } from './routes/admin._panel.audit'
 import { Route as AdminPanelDashboardRouteImport } from './routes/admin._panel.dashboard'
-import { Route as AdminPanelHospitalsRouteImport } from './routes/admin._panel.hospitals'
 import { Route as AdminPanelInquiriesRouteImport } from './routes/admin._panel.inquiries'
+import { Route as AdminPanelNotificationsRouteImport } from './routes/admin._panel.notifications'
 import { Route as AdminPanelProfileRouteImport } from './routes/admin._panel.profile'
+import { Route as AdminPanelReportsRouteImport } from './routes/admin._panel.reports'
+import { Route as AdminPanelRequestsRouteImport } from './routes/admin._panel.requests'
 import { Route as AdminPanelSettingsRouteImport } from './routes/admin._panel.settings'
+import { Route as AdminPanelUsersRouteImport } from './routes/admin._panel.users'
+import { Route as AdminPanelApplicationsIndexRouteImport } from './routes/admin._panel.applications.index'
 import { Route as AdminPanelApplicationsIdRouteImport } from './routes/admin._panel.applications.$id'
+import { Route as AdminPanelDeviceRequestsIndexRouteImport } from './routes/admin._panel.device-requests.index'
+import { Route as AdminPanelDeviceRequestsIdRouteImport } from './routes/admin._panel.device-requests.$id'
+import { Route as AdminPanelHospitalsIndexRouteImport } from './routes/admin._panel.hospitals.index'
 import { Route as AdminPanelHospitalsIdRouteImport } from './routes/admin._panel.hospitals.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -50,6 +63,16 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeviceRequestRoute = DeviceRequestRouteImport.update({
+  id: '/device-request',
+  path: '/device-request',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HospitalPlatformRoute = HospitalPlatformRouteImport.update({
+  id: '/hospital-platform',
+  path: '/hospital-platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HospitalsRoute = HospitalsRouteImport.update({
   id: '/hospitals',
   path: '/hospitals',
@@ -63,6 +86,11 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProvidersRoute = ProvidersRouteImport.update({
+  id: '/providers',
+  path: '/providers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -84,14 +112,29 @@ const AdminPanelRoute = AdminPanelRouteImport.update({
   id: '/_panel',
   getParentRoute: () => AdminRoute,
 } as any)
+const HospitalDashboardRoute = HospitalDashboardRouteImport.update({
+  id: '/hospital/dashboard',
+  path: '/hospital/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HospitalLoginRoute = HospitalLoginRouteImport.update({
   id: '/hospital/login',
   path: '/hospital/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminPanelApplicationsRoute = AdminPanelApplicationsRouteImport.update({
-  id: '/applications',
-  path: '/applications',
+const ProviderDashboardRoute = ProviderDashboardRouteImport.update({
+  id: '/provider/dashboard',
+  path: '/provider/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProviderLoginRoute = ProviderLoginRouteImport.update({
+  id: '/provider/login',
+  path: '/provider/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPanelAuditRoute = AdminPanelAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => AdminPanelRoute,
 } as any)
 const AdminPanelDashboardRoute = AdminPanelDashboardRouteImport.update({
@@ -99,14 +142,14 @@ const AdminPanelDashboardRoute = AdminPanelDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminPanelRoute,
 } as any)
-const AdminPanelHospitalsRoute = AdminPanelHospitalsRouteImport.update({
-  id: '/hospitals',
-  path: '/hospitals',
-  getParentRoute: () => AdminPanelRoute,
-} as any)
 const AdminPanelInquiriesRoute = AdminPanelInquiriesRouteImport.update({
   id: '/inquiries',
   path: '/inquiries',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
+const AdminPanelNotificationsRoute = AdminPanelNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AdminPanelRoute,
 } as any)
 const AdminPanelProfileRoute = AdminPanelProfileRouteImport.update({
@@ -114,21 +157,60 @@ const AdminPanelProfileRoute = AdminPanelProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AdminPanelRoute,
 } as any)
+const AdminPanelReportsRoute = AdminPanelReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
+const AdminPanelRequestsRoute = AdminPanelRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
 const AdminPanelSettingsRoute = AdminPanelSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AdminPanelRoute,
 } as any)
+const AdminPanelUsersRoute = AdminPanelUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
+const AdminPanelApplicationsIndexRoute =
+  AdminPanelApplicationsIndexRouteImport.update({
+    id: '/applications/',
+    path: '/applications/',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
 const AdminPanelApplicationsIdRoute =
   AdminPanelApplicationsIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => AdminPanelApplicationsRoute,
+    id: '/applications/$id',
+    path: '/applications/$id',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelDeviceRequestsIndexRoute =
+  AdminPanelDeviceRequestsIndexRouteImport.update({
+    id: '/device-requests/',
+    path: '/device-requests/',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelDeviceRequestsIdRoute =
+  AdminPanelDeviceRequestsIdRouteImport.update({
+    id: '/device-requests/$id',
+    path: '/device-requests/$id',
+    getParentRoute: () => AdminPanelRoute,
+  } as any)
+const AdminPanelHospitalsIndexRoute =
+  AdminPanelHospitalsIndexRouteImport.update({
+    id: '/hospitals/',
+    path: '/hospitals/',
+    getParentRoute: () => AdminPanelRoute,
   } as any)
 const AdminPanelHospitalsIdRoute = AdminPanelHospitalsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AdminPanelHospitalsRoute,
+  id: '/hospitals/$id',
+  path: '/hospitals/$id',
+  getParentRoute: () => AdminPanelRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -136,41 +218,67 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/device-request': typeof DeviceRequestRoute
+  '/hospital-platform': typeof HospitalPlatformRoute
   '/hospitals': typeof HospitalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/privacy': typeof PrivacyRoute
+  '/providers': typeof ProvidersRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/hospital/dashboard': typeof HospitalDashboardRoute
   '/hospital/login': typeof HospitalLoginRoute
+  '/provider/dashboard': typeof ProviderDashboardRoute
+  '/provider/login': typeof ProviderLoginRoute
   '/admin/': typeof AdminIndexRoute
-  '/admin/applications': typeof AdminPanelApplicationsRouteWithChildren
+  '/admin/audit': typeof AdminPanelAuditRoute
   '/admin/dashboard': typeof AdminPanelDashboardRoute
-  '/admin/hospitals': typeof AdminPanelHospitalsRouteWithChildren
   '/admin/inquiries': typeof AdminPanelInquiriesRoute
+  '/admin/notifications': typeof AdminPanelNotificationsRoute
   '/admin/profile': typeof AdminPanelProfileRoute
+  '/admin/reports': typeof AdminPanelReportsRoute
+  '/admin/requests': typeof AdminPanelRequestsRoute
   '/admin/settings': typeof AdminPanelSettingsRoute
+  '/admin/users': typeof AdminPanelUsersRoute
   '/admin/applications/$id': typeof AdminPanelApplicationsIdRoute
+  '/admin/device-requests/$id': typeof AdminPanelDeviceRequestsIdRoute
   '/admin/hospitals/$id': typeof AdminPanelHospitalsIdRoute
+  '/admin/applications/': typeof AdminPanelApplicationsIndexRoute
+  '/admin/device-requests/': typeof AdminPanelDeviceRequestsIndexRoute
+  '/admin/hospitals/': typeof AdminPanelHospitalsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/device-request': typeof DeviceRequestRoute
+  '/hospital-platform': typeof HospitalPlatformRoute
   '/hospitals': typeof HospitalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/privacy': typeof PrivacyRoute
+  '/providers': typeof ProvidersRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AdminIndexRoute
+  '/hospital/dashboard': typeof HospitalDashboardRoute
   '/hospital/login': typeof HospitalLoginRoute
-  '/admin/applications': typeof AdminPanelApplicationsRouteWithChildren
+  '/provider/dashboard': typeof ProviderDashboardRoute
+  '/provider/login': typeof ProviderLoginRoute
+  '/admin/audit': typeof AdminPanelAuditRoute
   '/admin/dashboard': typeof AdminPanelDashboardRoute
-  '/admin/hospitals': typeof AdminPanelHospitalsRouteWithChildren
   '/admin/inquiries': typeof AdminPanelInquiriesRoute
+  '/admin/notifications': typeof AdminPanelNotificationsRoute
   '/admin/profile': typeof AdminPanelProfileRoute
+  '/admin/reports': typeof AdminPanelReportsRoute
+  '/admin/requests': typeof AdminPanelRequestsRoute
   '/admin/settings': typeof AdminPanelSettingsRoute
+  '/admin/users': typeof AdminPanelUsersRoute
   '/admin/applications/$id': typeof AdminPanelApplicationsIdRoute
+  '/admin/device-requests/$id': typeof AdminPanelDeviceRequestsIdRoute
   '/admin/hospitals/$id': typeof AdminPanelHospitalsIdRoute
+  '/admin/applications': typeof AdminPanelApplicationsIndexRoute
+  '/admin/device-requests': typeof AdminPanelDeviceRequestsIndexRoute
+  '/admin/hospitals': typeof AdminPanelHospitalsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -178,22 +286,35 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/device-request': typeof DeviceRequestRoute
+  '/hospital-platform': typeof HospitalPlatformRoute
   '/hospitals': typeof HospitalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/privacy': typeof PrivacyRoute
+  '/providers': typeof ProvidersRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/admin/_panel': typeof AdminPanelRouteWithChildren
+  '/hospital/dashboard': typeof HospitalDashboardRoute
   '/hospital/login': typeof HospitalLoginRoute
+  '/provider/dashboard': typeof ProviderDashboardRoute
+  '/provider/login': typeof ProviderLoginRoute
   '/admin/': typeof AdminIndexRoute
-  '/admin/_panel/applications': typeof AdminPanelApplicationsRouteWithChildren
+  '/admin/_panel/audit': typeof AdminPanelAuditRoute
   '/admin/_panel/dashboard': typeof AdminPanelDashboardRoute
-  '/admin/_panel/hospitals': typeof AdminPanelHospitalsRouteWithChildren
   '/admin/_panel/inquiries': typeof AdminPanelInquiriesRoute
+  '/admin/_panel/notifications': typeof AdminPanelNotificationsRoute
   '/admin/_panel/profile': typeof AdminPanelProfileRoute
+  '/admin/_panel/reports': typeof AdminPanelReportsRoute
+  '/admin/_panel/requests': typeof AdminPanelRequestsRoute
   '/admin/_panel/settings': typeof AdminPanelSettingsRoute
+  '/admin/_panel/users': typeof AdminPanelUsersRoute
   '/admin/_panel/applications/$id': typeof AdminPanelApplicationsIdRoute
+  '/admin/_panel/device-requests/$id': typeof AdminPanelDeviceRequestsIdRoute
   '/admin/_panel/hospitals/$id': typeof AdminPanelHospitalsIdRoute
+  '/admin/_panel/applications/': typeof AdminPanelApplicationsIndexRoute
+  '/admin/_panel/device-requests/': typeof AdminPanelDeviceRequestsIndexRoute
+  '/admin/_panel/hospitals/': typeof AdminPanelHospitalsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -202,63 +323,102 @@ export interface FileRouteTypes {
     | '/admin'
     | '/contact'
     | '/dashboard'
+    | '/device-request'
+    | '/hospital-platform'
     | '/hospitals'
     | '/how-it-works'
     | '/privacy'
+    | '/providers'
     | '/register'
     | '/terms'
+    | '/hospital/dashboard'
     | '/hospital/login'
+    | '/provider/dashboard'
+    | '/provider/login'
     | '/admin/'
-    | '/admin/applications'
+    | '/admin/audit'
     | '/admin/dashboard'
-    | '/admin/hospitals'
     | '/admin/inquiries'
+    | '/admin/notifications'
     | '/admin/profile'
+    | '/admin/reports'
+    | '/admin/requests'
     | '/admin/settings'
+    | '/admin/users'
     | '/admin/applications/$id'
+    | '/admin/device-requests/$id'
     | '/admin/hospitals/$id'
+    | '/admin/applications/'
+    | '/admin/device-requests/'
+    | '/admin/hospitals/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/contact'
     | '/dashboard'
+    | '/device-request'
+    | '/hospital-platform'
     | '/hospitals'
     | '/how-it-works'
     | '/privacy'
+    | '/providers'
     | '/register'
     | '/terms'
     | '/admin'
+    | '/hospital/dashboard'
     | '/hospital/login'
-    | '/admin/applications'
+    | '/provider/dashboard'
+    | '/provider/login'
+    | '/admin/audit'
     | '/admin/dashboard'
-    | '/admin/hospitals'
     | '/admin/inquiries'
+    | '/admin/notifications'
     | '/admin/profile'
+    | '/admin/reports'
+    | '/admin/requests'
     | '/admin/settings'
+    | '/admin/users'
     | '/admin/applications/$id'
+    | '/admin/device-requests/$id'
     | '/admin/hospitals/$id'
+    | '/admin/applications'
+    | '/admin/device-requests'
+    | '/admin/hospitals'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/contact'
     | '/dashboard'
+    | '/device-request'
+    | '/hospital-platform'
     | '/hospitals'
     | '/how-it-works'
     | '/privacy'
+    | '/providers'
     | '/register'
     | '/terms'
     | '/admin/_panel'
+    | '/hospital/dashboard'
     | '/hospital/login'
+    | '/provider/dashboard'
+    | '/provider/login'
     | '/admin/'
-    | '/admin/_panel/applications'
+    | '/admin/_panel/audit'
     | '/admin/_panel/dashboard'
-    | '/admin/_panel/hospitals'
     | '/admin/_panel/inquiries'
+    | '/admin/_panel/notifications'
     | '/admin/_panel/profile'
+    | '/admin/_panel/reports'
+    | '/admin/_panel/requests'
     | '/admin/_panel/settings'
+    | '/admin/_panel/users'
     | '/admin/_panel/applications/$id'
+    | '/admin/_panel/device-requests/$id'
     | '/admin/_panel/hospitals/$id'
+    | '/admin/_panel/applications/'
+    | '/admin/_panel/device-requests/'
+    | '/admin/_panel/hospitals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -266,12 +426,18 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
+  DeviceRequestRoute: typeof DeviceRequestRoute
+  HospitalPlatformRoute: typeof HospitalPlatformRoute
   HospitalsRoute: typeof HospitalsRoute
   HowItWorksRoute: typeof HowItWorksRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProvidersRoute: typeof ProvidersRoute
   RegisterRoute: typeof RegisterRoute
   TermsRoute: typeof TermsRoute
+  HospitalDashboardRoute: typeof HospitalDashboardRoute
   HospitalLoginRoute: typeof HospitalLoginRoute
+  ProviderDashboardRoute: typeof ProviderDashboardRoute
+  ProviderLoginRoute: typeof ProviderLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -304,6 +470,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/device-request': {
+      id: '/device-request'
+      path: '/device-request'
+      fullPath: '/device-request'
+      preLoaderRoute: typeof DeviceRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hospital-platform': {
+      id: '/hospital-platform'
+      path: '/hospital-platform'
+      fullPath: '/hospital-platform'
+      preLoaderRoute: typeof HospitalPlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hospitals': {
       id: '/hospitals'
       path: '/hospitals'
@@ -323,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/providers': {
+      id: '/providers'
+      path: '/providers'
+      fullPath: '/providers'
+      preLoaderRoute: typeof ProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -353,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/hospital/dashboard': {
+      id: '/hospital/dashboard'
+      path: '/hospital/dashboard'
+      fullPath: '/hospital/dashboard'
+      preLoaderRoute: typeof HospitalDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hospital/login': {
       id: '/hospital/login'
       path: '/hospital/login'
@@ -360,11 +554,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HospitalLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/_panel/applications': {
-      id: '/admin/_panel/applications'
-      path: '/applications'
-      fullPath: '/admin/applications'
-      preLoaderRoute: typeof AdminPanelApplicationsRouteImport
+    '/provider/dashboard': {
+      id: '/provider/dashboard'
+      path: '/provider/dashboard'
+      fullPath: '/provider/dashboard'
+      preLoaderRoute: typeof ProviderDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provider/login': {
+      id: '/provider/login'
+      path: '/provider/login'
+      fullPath: '/provider/login'
+      preLoaderRoute: typeof ProviderLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_panel/audit': {
+      id: '/admin/_panel/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminPanelAuditRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/dashboard': {
@@ -374,18 +582,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelDashboardRouteImport
       parentRoute: typeof AdminPanelRoute
     }
-    '/admin/_panel/hospitals': {
-      id: '/admin/_panel/hospitals'
-      path: '/hospitals'
-      fullPath: '/admin/hospitals'
-      preLoaderRoute: typeof AdminPanelHospitalsRouteImport
-      parentRoute: typeof AdminPanelRoute
-    }
     '/admin/_panel/inquiries': {
       id: '/admin/_panel/inquiries'
       path: '/inquiries'
       fullPath: '/admin/inquiries'
       preLoaderRoute: typeof AdminPanelInquiriesRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/notifications': {
+      id: '/admin/_panel/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminPanelNotificationsRouteImport
       parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/profile': {
@@ -395,6 +603,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelProfileRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/admin/_panel/reports': {
+      id: '/admin/_panel/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminPanelReportsRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/requests': {
+      id: '/admin/_panel/requests'
+      path: '/requests'
+      fullPath: '/admin/requests'
+      preLoaderRoute: typeof AdminPanelRequestsRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
     '/admin/_panel/settings': {
       id: '/admin/_panel/settings'
       path: '/settings'
@@ -402,64 +624,92 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelSettingsRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/admin/_panel/users': {
+      id: '/admin/_panel/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminPanelUsersRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/applications/': {
+      id: '/admin/_panel/applications/'
+      path: '/applications'
+      fullPath: '/admin/applications/'
+      preLoaderRoute: typeof AdminPanelApplicationsIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
     '/admin/_panel/applications/$id': {
       id: '/admin/_panel/applications/$id'
-      path: '/$id'
+      path: '/applications/$id'
       fullPath: '/admin/applications/$id'
       preLoaderRoute: typeof AdminPanelApplicationsIdRouteImport
-      parentRoute: typeof AdminPanelApplicationsRoute
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/device-requests/': {
+      id: '/admin/_panel/device-requests/'
+      path: '/device-requests'
+      fullPath: '/admin/device-requests/'
+      preLoaderRoute: typeof AdminPanelDeviceRequestsIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/device-requests/$id': {
+      id: '/admin/_panel/device-requests/$id'
+      path: '/device-requests/$id'
+      fullPath: '/admin/device-requests/$id'
+      preLoaderRoute: typeof AdminPanelDeviceRequestsIdRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
+    '/admin/_panel/hospitals/': {
+      id: '/admin/_panel/hospitals/'
+      path: '/hospitals'
+      fullPath: '/admin/hospitals/'
+      preLoaderRoute: typeof AdminPanelHospitalsIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
     }
     '/admin/_panel/hospitals/$id': {
       id: '/admin/_panel/hospitals/$id'
-      path: '/$id'
+      path: '/hospitals/$id'
       fullPath: '/admin/hospitals/$id'
       preLoaderRoute: typeof AdminPanelHospitalsIdRouteImport
-      parentRoute: typeof AdminPanelHospitalsRoute
+      parentRoute: typeof AdminPanelRoute
     }
   }
 }
 
-interface AdminPanelApplicationsRouteChildren {
-  AdminPanelApplicationsIdRoute: typeof AdminPanelApplicationsIdRoute
-}
-
-const AdminPanelApplicationsRouteChildren: AdminPanelApplicationsRouteChildren =
-  {
-    AdminPanelApplicationsIdRoute: AdminPanelApplicationsIdRoute,
-  }
-
-const AdminPanelApplicationsRouteWithChildren =
-  AdminPanelApplicationsRoute._addFileChildren(
-    AdminPanelApplicationsRouteChildren,
-  )
-
-interface AdminPanelHospitalsRouteChildren {
-  AdminPanelHospitalsIdRoute: typeof AdminPanelHospitalsIdRoute
-}
-
-const AdminPanelHospitalsRouteChildren: AdminPanelHospitalsRouteChildren = {
-  AdminPanelHospitalsIdRoute: AdminPanelHospitalsIdRoute,
-}
-
-const AdminPanelHospitalsRouteWithChildren =
-  AdminPanelHospitalsRoute._addFileChildren(AdminPanelHospitalsRouteChildren)
-
 interface AdminPanelRouteChildren {
-  AdminPanelApplicationsRoute: typeof AdminPanelApplicationsRouteWithChildren
+  AdminPanelAuditRoute: typeof AdminPanelAuditRoute
   AdminPanelDashboardRoute: typeof AdminPanelDashboardRoute
-  AdminPanelHospitalsRoute: typeof AdminPanelHospitalsRouteWithChildren
   AdminPanelInquiriesRoute: typeof AdminPanelInquiriesRoute
+  AdminPanelNotificationsRoute: typeof AdminPanelNotificationsRoute
   AdminPanelProfileRoute: typeof AdminPanelProfileRoute
+  AdminPanelReportsRoute: typeof AdminPanelReportsRoute
+  AdminPanelRequestsRoute: typeof AdminPanelRequestsRoute
   AdminPanelSettingsRoute: typeof AdminPanelSettingsRoute
+  AdminPanelUsersRoute: typeof AdminPanelUsersRoute
+  AdminPanelApplicationsIdRoute: typeof AdminPanelApplicationsIdRoute
+  AdminPanelDeviceRequestsIdRoute: typeof AdminPanelDeviceRequestsIdRoute
+  AdminPanelHospitalsIdRoute: typeof AdminPanelHospitalsIdRoute
+  AdminPanelApplicationsIndexRoute: typeof AdminPanelApplicationsIndexRoute
+  AdminPanelDeviceRequestsIndexRoute: typeof AdminPanelDeviceRequestsIndexRoute
+  AdminPanelHospitalsIndexRoute: typeof AdminPanelHospitalsIndexRoute
 }
 
 const AdminPanelRouteChildren: AdminPanelRouteChildren = {
-  AdminPanelApplicationsRoute: AdminPanelApplicationsRouteWithChildren,
+  AdminPanelAuditRoute: AdminPanelAuditRoute,
   AdminPanelDashboardRoute: AdminPanelDashboardRoute,
-  AdminPanelHospitalsRoute: AdminPanelHospitalsRouteWithChildren,
   AdminPanelInquiriesRoute: AdminPanelInquiriesRoute,
+  AdminPanelNotificationsRoute: AdminPanelNotificationsRoute,
   AdminPanelProfileRoute: AdminPanelProfileRoute,
+  AdminPanelReportsRoute: AdminPanelReportsRoute,
+  AdminPanelRequestsRoute: AdminPanelRequestsRoute,
   AdminPanelSettingsRoute: AdminPanelSettingsRoute,
+  AdminPanelUsersRoute: AdminPanelUsersRoute,
+  AdminPanelApplicationsIdRoute: AdminPanelApplicationsIdRoute,
+  AdminPanelDeviceRequestsIdRoute: AdminPanelDeviceRequestsIdRoute,
+  AdminPanelHospitalsIdRoute: AdminPanelHospitalsIdRoute,
+  AdminPanelApplicationsIndexRoute: AdminPanelApplicationsIndexRoute,
+  AdminPanelDeviceRequestsIndexRoute: AdminPanelDeviceRequestsIndexRoute,
+  AdminPanelHospitalsIndexRoute: AdminPanelHospitalsIndexRoute,
 }
 
 const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
@@ -483,12 +733,18 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
+  DeviceRequestRoute: DeviceRequestRoute,
+  HospitalPlatformRoute: HospitalPlatformRoute,
   HospitalsRoute: HospitalsRoute,
   HowItWorksRoute: HowItWorksRoute,
   PrivacyRoute: PrivacyRoute,
+  ProvidersRoute: ProvidersRoute,
   RegisterRoute: RegisterRoute,
   TermsRoute: TermsRoute,
+  HospitalDashboardRoute: HospitalDashboardRoute,
   HospitalLoginRoute: HospitalLoginRoute,
+  ProviderDashboardRoute: ProviderDashboardRoute,
+  ProviderLoginRoute: ProviderLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,21 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/site-chrome";
-import { Categories, DashboardSection, FinalCta, HospitalsSection, JoinSteps, Trust } from "@/components/sections";
+import { Categories, FinalCta, HospitalsSection, JoinSteps, Trust } from "@/components/sections";
 
 export const Route = createFileRoute("/hospitals")({
   head: () => ({
     meta: [
-      { title: "For Hospitals — RESQ Nepal Partner Network" },
-      { name: "description", content: "Bring your hospital's ambulances into one connected network for fleet visibility, trip management and booking requests." },
+      { title: "Hospital Ambulance Platform — RESQ Nepal" },
+      {
+        name: "description",
+        content:
+          "Explore centralized ambulance fleet management, GPS-ready monitoring, authorized cameras, requests, trips, drivers, and reporting for hospitals.",
+      },
       { property: "og:title", content: "For Hospitals — RESQ Nepal Partner Network" },
       { property: "og:description", content: "Your hospital. Your ambulances. One smart network." },
     ],
   }),
   component: () => (
     <>
-      <PageHero eyebrow="For hospitals" title="Partner with RESQ Nepal." copy="Organize your ambulance fleet, drivers and requests on one connected platform." />
+      <PageHero
+        eyebrow="For hospitals and healthcare providers"
+        title="Centralize Your Ambulance Operations."
+        copy="Bring fleet visibility, driver coordination, patient requests, trips, and authorized monitoring into one secure hospital platform."
+      />
       <HospitalsSection />
-      <DashboardSection />
       <Categories />
       <Trust />
       <JoinSteps />

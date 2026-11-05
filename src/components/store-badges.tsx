@@ -11,7 +11,10 @@ function AppleGlyph() {
 function PlayGlyph() {
   return (
     <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true">
-      <path d="M4 2.5 13.5 12 4 21.5c-.3-.2-.5-.6-.5-1v-17c0-.4.2-.8.5-1Z" className="fill-success" />
+      <path
+        d="M4 2.5 13.5 12 4 21.5c-.3-.2-.5-.6-.5-1v-17c0-.4.2-.8.5-1Z"
+        className="fill-success"
+      />
       <path d="m16.6 8.9-3.1 3.1L4 2.5c.3-.2.8-.2 1.2 0l11.4 6.4Z" className="fill-warning" />
       <path d="m16.6 15.1-11.4 6.4c-.4.2-.9.2-1.2 0l9.5-9.5 3.1 3.1Z" className="fill-primary" />
       <path d="m20.2 13-3.6 2.1-3.1-3.1 3.1-3.1 3.6 2.1c.8.4.8 1.6 0 2Z" className="fill-chart-5" />
@@ -31,7 +34,7 @@ export function StoreBadges({ className, inverted }: { className?: string; inver
           <>
             {b.glyph}
             <span className="flex flex-col text-left leading-tight">
-              <span className="text-[10px] opacity-70">{b.href ? b.pre : "Coming soon on"}</span>
+              <span className="text-[10px] opacity-70">{b.pre}</span>
               <span className="text-[15px] font-bold">{b.label}</span>
             </span>
           </>
@@ -42,9 +45,19 @@ export function StoreBadges({ className, inverted }: { className?: string; inver
           b.href ? "hover:-translate-y-0.5" : "cursor-default opacity-90",
         );
         return b.href ? (
-          <a key={b.label} href={b.href} target="_blank" rel="noreferrer" className={cls}>{inner}</a>
+          <a key={b.label} href={b.href} target="_blank" rel="noreferrer" className={cls}>
+            {inner}
+          </a>
         ) : (
-          <span key={b.label} className={cls} aria-label={`${b.label} — coming soon`}>{inner}</span>
+          <button
+            key={b.label}
+            type="button"
+            className={cls}
+            aria-label={`${b.pre} ${b.label}`}
+            aria-disabled="true"
+          >
+            {inner}
+          </button>
         );
       })}
     </div>

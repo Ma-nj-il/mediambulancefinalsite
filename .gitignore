@@ -1,6 +1,7 @@
 # Logs
 logs
-*.lognpm-debug.log*
+*.log
+npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
@@ -35,3 +36,6 @@ dist-ssr
 .env.bak
 .env.*
 !.env.example
+
+# Local Supabase CLI metadata
+supabase/.temp/

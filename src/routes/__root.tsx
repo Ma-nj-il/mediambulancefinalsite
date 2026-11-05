@@ -81,8 +81,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RESQ Nepal — Ambulance Network" },
-      { name: "description", content: "Find and request ambulance services across Nepal." },
+      { title: "RESQ Nepal — Ambulance Management Platform" },
+      {
+        name: "description",
+        content: "Integrated ambulance access and hospital fleet operations for Nepal.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -126,15 +129,17 @@ function RootComponent() {
   // website header/footer (with hospital buttons) inside /admin routes.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isPartnerLogin = pathname === "/hospital/login" || pathname === "/provider/login";
+  const showPublicChrome = !isAdmin && !isPartnerLogin;
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      {!isAdmin && <SiteHeader />}
+      {showPublicChrome && <SiteHeader />}
       <main>
         <Outlet />
       </main>
-      {!isAdmin && <SiteFooter />}
+      {showPublicChrome && <SiteFooter />}
       <Toaster />
     </QueryClientProvider>
   );

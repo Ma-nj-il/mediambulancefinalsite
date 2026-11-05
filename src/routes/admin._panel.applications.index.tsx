@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   EmptyState,
@@ -14,9 +15,10 @@ import {
   theadCls,
 } from "@/components/admin-ui";
 import { fmtDate, statusMeta, type AppStatus } from "@/lib/admin";
+import { toCsv } from "@/lib/application-csv";
 import { gpsLabel, typeLabels } from "@/lib/registration";
 
-export const Route = createFileRoute("/admin/_panel/applications")({
+export const Route = createFileRoute("/admin/_panel/applications/")({
   head: () => ({ meta: [{ title: "Hospital Applications — RESQ Admin" }] }),
   component: Applications,
 });
@@ -36,28 +38,6 @@ const sorts = [
 ] as const;
 const PAGE_SIZE = 10;
 
-export function toCsv(rows: Record<string, unknown>[]) {
-  const head = [
-    "reference",
-    "hospital",
-    "contact",
-    "phone",
-    "email",
-    "address",
-    "district",
-    "ambulances",
-    "categories",
-    "types",
-    "gps",
-    "message",
-    "status",
-    "submitted",
-    "updated",
-  ];
-  const esc = (v: unknown) => `"${String(v ?? "").replaceAll('"', '""')}"`;
-  return [head.join(","), ...rows.map((r) => head.map((h) => esc(r[h])).join(","))].join("\n");
-}
-
 function Applications() {
   const [filter, setFilter] = useState<(typeof filters)[number]>("all");
   const [search, setSearch] = useState("");
@@ -70,8 +50,7 @@ function Applications() {
 
   const reviewers = useQuery({
     queryKey: ["admin-reviewers"],
-    queryFn: async () =>
-      (await supabase.from("admin_profiles").select("user_id, username, display_name")).data ?? [],
+    queryFn: async () => (await supabase.rpc("list_admin_directory")).data ?? [],
   });
   const reviewerName = (uid: string | null) =>
     reviewers.data?.find((r) => r.user_id === uid)?.display_name ??
@@ -280,9 +259,23 @@ function Applications() {
                   {q.data.rows.map((a) => (
                     <tr key={a.id} className="border-t border-border hover:bg-secondary/60">
                       <td className="py-2.5 pr-3 font-bold text-primary">
-                        {a.application_reference}
+                        <Link
+                          to="/admin/applications/$id"
+                          params={{ id: a.id }}
+                          className="hover:underline"
+                        >
+                          {a.application_reference}
+                        </Link>
                       </td>
-                      <td className="pr-3 font-semibold text-navy">{a.hospital_name}</td>
+                      <td className="pr-3 font-semibold text-navy">
+                        <Link
+                          to="/admin/applications/$id"
+                          params={{ id: a.id }}
+                          className="hover:text-primary hover:underline"
+                        >
+                          {a.hospital_name}
+                        </Link>
+                      </td>
                       <td className="pr-3 text-muted-foreground">
                         {a.contact_person}
                         <br />
@@ -311,13 +304,13 @@ function Applications() {
                       <td className="pr-3">
                         <StatusBadge status={a.status} />
                       </td>
-                      <td>
+                      <td className="min-w-40 py-2">
                         <Link
                           to="/admin/applications/$id"
                           params={{ id: a.id }}
-                          className="font-bold text-primary hover:underline"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-navy px-3 py-2 text-xs font-bold text-navy-foreground"
                         >
-                          Review
+                          <Eye className="h-3.5 w-3.5" /> View application
                         </Link>
                       </td>
                     </tr>

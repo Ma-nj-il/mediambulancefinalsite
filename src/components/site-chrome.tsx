@@ -28,7 +28,7 @@ export function SiteHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <Button asChild variant="soft" size="lg" className="hidden sm:inline-flex">
-            <Link to="/hospital/login">Login as Hospital</Link>
+            <Link to="/hospital/login">Login as Hospital / Provider</Link>
           </Button>
           <Button asChild variant="hero" size="lg" className="hidden sm:inline-flex">
             <Link to="/register">Join as Hospital</Link>
@@ -57,7 +57,7 @@ export function SiteHeader() {
           ))}
           <Button asChild variant="soft" size="xl" className="mt-5 w-full">
             <Link to="/hospital/login" onClick={() => setOpen(false)}>
-              Login as Hospital
+              Login as Hospital / Provider
             </Link>
           </Button>
           <Button asChild variant="hero" size="xl" className="mt-3 w-full">
@@ -108,7 +108,7 @@ export function SiteFooter() {
           <ul className="mt-4 space-y-2.5 text-sm text-navy-foreground/80">
             <li>Email: {site.email ?? "To be announced"}</li>
             <li>Phone: {site.phone ?? "To be announced"}</li>
-            <li>{site.address ?? "Kathmandu, Nepal"}</li>
+            <li>{site.address ?? "To be announced"}</li>
           </ul>
           <ul className="mt-6 space-y-2.5 text-sm">
             <li>

@@ -45,6 +45,7 @@ export type Database = {
           is_active: boolean;
           last_login_at: string | null;
           must_change_password: boolean;
+          staff_role: Database["public"]["Enums"]["admin_staff_role"];
           updated_at: string;
           user_id: string;
           username: string;
@@ -55,6 +56,7 @@ export type Database = {
           is_active?: boolean;
           last_login_at?: string | null;
           must_change_password?: boolean;
+          staff_role?: Database["public"]["Enums"]["admin_staff_role"];
           updated_at?: string;
           user_id: string;
           username: string;
@@ -65,9 +67,46 @@ export type Database = {
           is_active?: boolean;
           last_login_at?: string | null;
           must_change_password?: boolean;
+          staff_role?: Database["public"]["Enums"]["admin_staff_role"];
           updated_at?: string;
           user_id?: string;
           username?: string;
+        };
+        Relationships: [];
+      };
+      partner_accounts: {
+        Row: {
+          created_at: string;
+          display_name: string;
+          hospital_application_id: string | null;
+          is_active: boolean;
+          last_login_at: string | null;
+          must_change_password: boolean;
+          role: "hospital" | "provider";
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          display_name: string;
+          hospital_application_id?: string | null;
+          is_active?: boolean;
+          last_login_at?: string | null;
+          must_change_password?: boolean;
+          role: "hospital" | "provider";
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          display_name?: string;
+          hospital_application_id?: string | null;
+          is_active?: boolean;
+          last_login_at?: string | null;
+          must_change_password?: boolean;
+          role?: "hospital" | "provider";
+          updated_at?: string;
+          user_id?: string;
         };
         Relationships: [];
       };
@@ -300,6 +339,161 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_notifications: {
+        Row: {
+          created_at: string;
+          description: string;
+          id: string;
+          notification_type: string;
+          recipient_admin: string | null;
+          related_record_id: string | null;
+          related_record_type: string;
+          title: string;
+        };
+        Insert: {
+          created_at?: string;
+          description: string;
+          id?: string;
+          notification_type: string;
+          recipient_admin?: string | null;
+          related_record_id?: string | null;
+          related_record_type: string;
+          title: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string;
+          id?: string;
+          notification_type?: string;
+          recipient_admin?: string | null;
+          related_record_id?: string | null;
+          related_record_type?: string;
+          title?: string;
+        };
+        Relationships: [];
+      };
+      admin_notification_reads: {
+        Row: { admin_user_id: string; notification_id: string; read_at: string };
+        Insert: { admin_user_id: string; notification_id: string; read_at?: string };
+        Update: { admin_user_id?: string; notification_id?: string; read_at?: string };
+        Relationships: [];
+      };
+      device_requests: {
+        Row: {
+          assigned_admin: string | null;
+          completed_at: string | null;
+          created_at: string;
+          dashcam_quantity: number;
+          device_category: string;
+          gps_quantity: number;
+          hospital_application_id: string;
+          id: string;
+          request_description: string | null;
+          request_number: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: Database["public"]["Enums"]["website_request_status"];
+          updated_at: string;
+          vehicle_quantity: number | null;
+        };
+        Insert: {
+          assigned_admin?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          dashcam_quantity?: number;
+          device_category: string;
+          gps_quantity?: number;
+          hospital_application_id: string;
+          id?: string;
+          request_description?: string | null;
+          request_number?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: Database["public"]["Enums"]["website_request_status"];
+          updated_at?: string;
+          vehicle_quantity?: number | null;
+        };
+        Update: {
+          assigned_admin?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          dashcam_quantity?: number;
+          device_category?: string;
+          gps_quantity?: number;
+          hospital_application_id?: string;
+          id?: string;
+          request_description?: string | null;
+          request_number?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: Database["public"]["Enums"]["website_request_status"];
+          updated_at?: string;
+          vehicle_quantity?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "device_requests_hospital_application_id_fkey";
+            columns: ["hospital_application_id"];
+            isOneToOne: false;
+            referencedRelation: "hospital_applications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      device_request_history: {
+        Row: {
+          changed_by: string | null;
+          created_at: string;
+          device_request_id: string;
+          id: string;
+          new_status: Database["public"]["Enums"]["website_request_status"];
+          previous_status: Database["public"]["Enums"]["website_request_status"] | null;
+          reason: string | null;
+        };
+        Insert: {
+          changed_by?: string | null;
+          created_at?: string;
+          device_request_id: string;
+          id?: string;
+          new_status: Database["public"]["Enums"]["website_request_status"];
+          previous_status?: Database["public"]["Enums"]["website_request_status"] | null;
+          reason?: string | null;
+        };
+        Update: {
+          changed_by?: string | null;
+          created_at?: string;
+          device_request_id?: string;
+          id?: string;
+          new_status?: Database["public"]["Enums"]["website_request_status"];
+          previous_status?: Database["public"]["Enums"]["website_request_status"] | null;
+          reason?: string | null;
+        };
+        Relationships: [];
+      };
+      device_request_notes: {
+        Row: {
+          author_id: string | null;
+          body: string;
+          created_at: string;
+          device_request_id: string;
+          id: string;
+        };
+        Insert: {
+          author_id?: string | null;
+          body: string;
+          created_at?: string;
+          device_request_id: string;
+          id?: string;
+        };
+        Update: {
+          author_id?: string | null;
+          body?: string;
+          created_at?: string;
+          device_request_id?: string;
+          id?: string;
+        };
+        Relationships: [];
+      };
       drivers: {
         Row: {
           ambulance_id: string | null;
@@ -455,7 +649,34 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      admin_notification_inbox: {
+        Row: {
+          created_at: string;
+          description: string;
+          id: string;
+          notification_type: string;
+          read_at: string | null;
+          recipient_admin: string | null;
+          related_record_id: string | null;
+          related_record_type: string;
+          title: string;
+        };
+        Relationships: [];
+      };
+      website_request_index: {
+        Row: {
+          category: string | null;
+          hospital_name: string | null;
+          id: string | null;
+          request_number: string | null;
+          source: string | null;
+          status: string | null;
+          submitted_at: string | null;
+          title: string | null;
+          updated_at: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       change_application_status: {
@@ -499,11 +720,32 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      change_device_request_status: {
+        Args: {
+          _id: string;
+          _new: Database["public"]["Enums"]["website_request_status"];
+          _reason?: string;
+        };
+        Returns: Database["public"]["Tables"]["device_requests"]["Row"];
+      };
+      change_inquiry_status: {
+        Args: { _id: string; _new: string };
+        Returns: Database["public"]["Tables"]["contact_inquiries"]["Row"];
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
           _user_id: string;
         };
+        Returns: boolean;
+      };
+      has_admin_permission: { Args: { _permission: string }; Returns: boolean };
+      list_admin_directory: {
+        Args: never;
+        Returns: { display_name: string | null; user_id: string; username: string }[];
+      };
+      has_partner_access: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] };
         Returns: boolean;
       };
       log_admin_action: {
@@ -515,8 +757,20 @@ export type Database = {
         };
         Returns: undefined;
       };
+      mark_partner_password_changed: { Args: never; Returns: undefined };
       mark_admin_password_changed: { Args: never; Returns: undefined };
       record_admin_login: { Args: never; Returns: undefined };
+      record_partner_login: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] };
+        Returns: undefined;
+      };
+      set_admin_staff_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["admin_staff_role"];
+          _user_id: string;
+        };
+        Returns: Database["public"]["Tables"]["admin_profiles"]["Row"];
+      };
       set_partnership_status: {
         Args: {
           _id: string;
@@ -558,12 +812,26 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      update_own_admin_profile: {
+        Args: { _display_name: string };
+        Returns: Database["public"]["Tables"]["admin_profiles"]["Row"];
+      };
     };
     Enums: {
-      app_role: "admin" | "hospital";
+      admin_staff_role: "super_admin" | "application_manager" | "request_manager" | "report_viewer";
+      app_role: "admin" | "hospital" | "provider";
       application_status:
         "pending" | "under_review" | "changes_requested" | "approved" | "rejected";
       partnership_status: "active" | "suspended";
+      website_request_status:
+        | "new"
+        | "pending"
+        | "under_review"
+        | "approved"
+        | "rejected"
+        | "in_progress"
+        | "completed"
+        | "cancelled";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -685,9 +953,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "hospital"],
+      admin_staff_role: ["super_admin", "application_manager", "request_manager", "report_viewer"],
+      app_role: ["admin", "hospital", "provider"],
       application_status: ["pending", "under_review", "changes_requested", "approved", "rejected"],
       partnership_status: ["active", "suspended"],
+      website_request_status: [
+        "new",
+        "pending",
+        "under_review",
+        "approved",
+        "rejected",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
     },
   },
 } as const;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { toCsv } from "@/routes/admin._panel.applications";
+import { toCsv } from "@/lib/application-csv";
 import { isApprovalReady, MANDATORY_CHECKS, missingMandatoryChecks } from "@/lib/workflow";
 
 const root = join(__dirname, "..", "..");

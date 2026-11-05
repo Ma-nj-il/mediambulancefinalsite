@@ -37,10 +37,9 @@ function Profile() {
   const saveName = useMutation({
     mutationFn: async () => {
       if (!q.data) return;
-      const { error } = await supabase
-        .from("admin_profiles")
-        .update({ display_name: displayName.trim() || null })
-        .eq("user_id", q.data.user.id);
+      const { error } = await supabase.rpc("update_own_admin_profile", {
+        _display_name: displayName.trim(),
+      });
       if (error) throw error;
     },
     onSuccess: async () => {

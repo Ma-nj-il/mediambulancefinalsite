@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
@@ -20,6 +21,7 @@ import {
 } from "@/lib/workflow";
 import { DOC_TYPES } from "@/lib/applications.functions";
 import { gpsLabel, typeLabels } from "@/lib/registration";
+import { syncApprovalDeviceRequests } from "@/lib/approval-device-requests.functions";
 
 export const Route = createFileRoute("/admin/_panel/applications/$id")({
   head: () => ({ meta: [{ title: "Application detail — RESQ Admin" }] }),
@@ -27,15 +29,16 @@ export const Route = createFileRoute("/admin/_panel/applications/$id")({
 });
 
 const nextActions: { value: AppStatus; label: string; needsReason: boolean }[] = [
-  { value: "under_review", label: "Mark under review", needsReason: false },
-  { value: "changes_requested", label: "Request corrections", needsReason: true },
-  { value: "approved", label: "Approve", needsReason: false },
+  { value: "under_review", label: "Processing", needsReason: false },
+  { value: "changes_requested", label: "Hold / request corrections", needsReason: true },
+  { value: "approved", label: "Accept / approve", needsReason: false },
   { value: "rejected", label: "Reject", needsReason: true },
 ];
 
 function Detail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
+  const syncRequests = useServerFn(syncApprovalDeviceRequests);
   const [action, setAction] = useState<AppStatus | null>(null);
   const [reason, setReason] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -68,7 +71,7 @@ function Detail() {
           .select("id, body, created_at, author_id")
           .eq("hospital_application_id", id)
           .order("created_at", { ascending: false }),
-        supabase.from("admin_profiles").select("user_id, username, display_name"),
+        supabase.rpc("list_admin_directory"),
         supabase
           .from("application_checklist")
           .select("check_key, is_checked")
@@ -102,6 +105,25 @@ function Detail() {
       setMsg(`Application ${statusMeta[v.next].label.toLowerCase()} successfully.`);
       setAction(null);
       setReason("");
+      if (v.next === "approved") {
+        try {
+          const { created } = await syncRequests({ data: { applicationId: id } });
+          if (created) setMsg("Hospital approved. Its GPS / device request is ready for review.");
+        } catch {
+          setErr(
+            "Hospital approved, but its equipment request could not be created. Open GPS & Device Requests to retry automatically.",
+          );
+        }
+        await Promise.all(
+          [
+            "admin-device-requests",
+            "admin-hospitals",
+            "admin-notifications",
+            "admin-reports",
+            "admin-all-requests",
+          ].map((key) => qc.invalidateQueries({ queryKey: [key] })),
+        );
+      }
       await qc.invalidateQueries({ queryKey: ["admin-application", id] });
       await qc.invalidateQueries({ queryKey: ["admin-applications"] });
       await qc.invalidateQueries({ queryKey: ["admin-overview"] });
@@ -238,16 +260,28 @@ function Detail() {
   const checkedKeys = checks.filter((c) => c.is_checked).map((c) => c.check_key);
   const approvalReady = isApprovalReady(checkedKeys);
   const missingChecks = missingMandatoryChecks(checkedKeys);
+  const availableActions = nextActions.filter((item) => canTransition(app.status, item.value));
 
   return (
     <>
       <PageTitle
-        title={app.hospital_name}
-        copy={`${app.application_reference} · submitted ${fmtDateTime(app.submitted_at)}`}
+        title="Application details"
+        copy={`${app.application_reference} · ${app.hospital_name} · submitted ${fmtDateTime(app.submitted_at)}`}
         actions={
-          <Link to="/admin/applications" className="text-sm font-bold text-primary hover:underline">
-            ← All applications
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="#review-actions"
+              className="rounded-xl bg-navy px-4 py-2 text-sm font-bold text-navy-foreground"
+            >
+              Review application
+            </a>
+            <Link
+              to="/admin/applications"
+              className="text-sm font-bold text-primary hover:underline"
+            >
+              ← All applications
+            </Link>
+          </div>
         }
       />
       {msg && (
@@ -266,6 +300,68 @@ function Detail() {
           {err}
         </p>
       )}
+
+      <Panel title="Application summary" className="mb-6">
+        <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Hospital
+            </p>
+            <p className="mt-1 font-bold text-navy">{app.hospital_name}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Contact
+            </p>
+            <p className="mt-1 font-bold text-navy">{app.contact_person}</p>
+            <p className="text-muted-foreground">{app.phone}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Location
+            </p>
+            <p className="mt-1 font-bold text-navy">{app.city_district ?? app.hospital_address}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Current status
+            </p>
+            <p className="mt-1">
+              <StatusBadge status={app.status} />
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Ambulances
+            </p>
+            <p className="mt-1 font-bold text-navy">{app.ambulance_count}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              GPS preference
+            </p>
+            <p className="mt-1 font-bold text-navy">
+              {gpsLabel(app.preferred_gps_tracking_method ?? app.gps_availability)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Submitted
+            </p>
+            <p className="mt-1 font-bold text-navy">{fmtDateTime(app.submitted_at)}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Verification
+            </p>
+            <p className={`mt-1 font-bold ${approvalReady ? "text-success" : "text-navy"}`}>
+              {approvalReady
+                ? "Ready for approval"
+                : `${missingChecks.length} mandatory checks left`}
+            </p>
+          </div>
+        </div>
+      </Panel>
 
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
@@ -541,86 +637,104 @@ function Detail() {
         </div>
 
         <div className="space-y-6">
-          <Panel title="Review actions">
-            {!action ? (
-              <div className="grid gap-2">
-                {nextActions
-                  .filter((a) => canTransition(app.status, a.value))
-                  .map((a) => (
-                    <button
-                      key={a.value}
-                      onClick={() => {
+          <div id="review-actions" className="scroll-mt-6">
+            <Panel title="Review actions">
+              {!action ? (
+                availableActions.length ? (
+                  <label className="block text-sm font-bold text-navy">
+                    Choose one review decision
+                    <select
+                      aria-label="Review decision"
+                      value=""
+                      onChange={(event) => {
                         setErr(null);
                         setMsg(null);
-                        setAction(a.value);
+                        setAction(event.target.value as AppStatus);
                       }}
-                      className={`rounded-xl px-4 py-2.5 text-sm font-bold ${a.value === "approved" ? "bg-success text-white" : a.value === "rejected" ? "bg-primary text-primary-foreground" : "border border-border text-navy hover:border-primary"}`}
+                      className="mt-2 h-11 w-full rounded-xl border border-input bg-background px-3 font-normal"
                     >
-                      {a.label} ({statusMeta[a.value].label})
-                    </button>
-                  ))}
-                {nextActions.every((a) => !canTransition(app.status, a.value)) && (
+                      <option value="">Select an action…</option>
+                      {availableActions.map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : (
                   <p className="rounded-xl bg-secondary px-4 py-3 text-sm text-muted-foreground">
                     This application is {statusMeta[app.status].label.toLowerCase()} — a final
                     state. The record is kept for history; no further actions apply.
                   </p>
-                )}
-              </div>
-            ) : (
-              <div>
-                <p className="text-sm font-bold text-navy">
-                  Confirm: {action ? statusMeta[action].label : ""}
-                </p>
-                {nextActions.find((a) => a.value === action)?.needsReason && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    A reason is required and will be saved.
+                )
+              ) : (
+                <div>
+                  <p className="text-sm font-bold text-navy">
+                    Confirm: {action ? statusMeta[action].label : ""}
                   </p>
-                )}
-                {action === "approved" && !approvalReady && (
-                  <p
-                    role="alert"
-                    className="mt-3 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-primary"
-                  >
-                    Complete the verification checklist first ({missingChecks.length} mandatory{" "}
-                    {missingChecks.length === 1 ? "item" : "items"} remaining). Approval is also
-                    blocked on the server until then.
-                  </p>
-                )}
-                <textarea
-                  aria-label="Reason"
-                  rows={3}
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder={
-                    action === "rejected"
-                      ? "Rejection reason…"
-                      : action === "changes_requested"
-                        ? "What needs to be corrected?…"
-                        : "Optional note…"
-                  }
-                  className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                />
-                <div className="mt-3 flex gap-2">
-                  <button
-                    disabled={mut.isPending || (action === "approved" && !approvalReady)}
-                    onClick={() => mut.mutate({ next: action, note: reason.trim() || undefined })}
-                    className="flex-1 rounded-xl bg-navy px-4 py-2.5 text-sm font-bold text-navy-foreground disabled:opacity-50"
-                  >
-                    {mut.isPending ? "Saving…" : "Confirm"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAction(null);
-                      setReason("");
-                    }}
-                    className="rounded-xl border border-border px-4 py-2.5 text-sm font-bold text-navy"
-                  >
-                    Cancel
-                  </button>
+                  {action === "approved" &&
+                    ["gps_device", "gps_device_dashcam"].includes(
+                      app.preferred_gps_tracking_method ?? "",
+                    ) && (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Approval creates an equipment request for {app.ambulance_count} GPS devices
+                        {app.preferred_gps_tracking_method === "gps_device_dashcam"
+                          ? ` and ${app.ambulance_count} dashcams`
+                          : ""}
+                        , unless a request already exists. Supply and installation remain pending.
+                      </p>
+                    )}
+                  {nextActions.find((a) => a.value === action)?.needsReason && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      A reason is required and will be saved.
+                    </p>
+                  )}
+                  {action === "approved" && !approvalReady && (
+                    <p
+                      role="alert"
+                      className="mt-3 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-primary"
+                    >
+                      Complete the verification checklist first ({missingChecks.length} mandatory{" "}
+                      {missingChecks.length === 1 ? "item" : "items"} remaining). Approval is also
+                      blocked on the server until then.
+                    </p>
+                  )}
+                  <textarea
+                    aria-label="Reason"
+                    rows={3}
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder={
+                      action === "rejected"
+                        ? "Rejection reason…"
+                        : action === "changes_requested"
+                          ? "What needs to be corrected?…"
+                          : "Optional note…"
+                    }
+                    className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                  />
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      disabled={mut.isPending || (action === "approved" && !approvalReady)}
+                      onClick={() => mut.mutate({ next: action, note: reason.trim() || undefined })}
+                      className="flex-1 rounded-xl bg-navy px-4 py-2.5 text-sm font-bold text-navy-foreground disabled:opacity-50"
+                    >
+                      {mut.isPending ? "Saving…" : "Confirm"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAction(null);
+                        setReason("");
+                      }}
+                      className="rounded-xl border border-border px-4 py-2.5 text-sm font-bold text-navy"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </Panel>
+              )}
+            </Panel>
+          </div>
           <Panel title="Record">
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">

@@ -1,7 +1,7 @@
 // Real contact details are not yet supplied. Keep null until confirmed — the UI shows "To be announced".
 export const site = {
   name: "RESQ Nepal",
-  tagline: "A smarter way to connect with ambulance services in Nepal.",
+  tagline: "Integrated ambulance access, fleet management, and hospital operations for Nepal.",
   email: null as string | null,
   phone: null as string | null,
   address: null as string | null,
@@ -12,8 +12,7 @@ export const site = {
 
 export const nav = [
   { to: "/", label: "Home" },
-  { to: "/hospitals", label: "For Hospitals" },
+  { to: "/hospitals", label: "Hospital Platform" },
   { to: "/how-it-works", label: "How It Works" },
-  { to: "/dashboard", label: "Live Dashboard" },
   { to: "/contact", label: "Contact" },
 ] as const;

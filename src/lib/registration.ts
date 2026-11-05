@@ -65,10 +65,10 @@ export const registrationSchema = z.object({
     .optional()
     .default(""),
   gpsMethod: z.enum(["gps_device", "gps_device_dashcam", "mobile_gps", "undecided"], {
-    errorMap: () => ({ message: "Choose a preferred GPS tracking method." }),
+    error: "Choose a preferred GPS tracking method.",
   }),
   totalAmbulances: z
-    .number({ invalid_type_error: "Enter the total number of ambulances." })
+    .number({ error: "Enter the total number of ambulances." })
     .int("Enter a whole number — decimals are not allowed.")
     .min(1, "Enter at least 1 ambulance.")
     .max(500, "Enter 500 or fewer."),

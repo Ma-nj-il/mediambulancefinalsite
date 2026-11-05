@@ -21,6 +21,8 @@ import {
   ClipboardList,
   Clock,
   Hourglass,
+  HardDrive,
+  Inbox,
   XCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,9 +49,12 @@ export const Route = createFileRoute("/admin/_panel/dashboard")({
 });
 
 const ranges = {
+  "1": "Today",
   "7": "Last 7 days",
   "30": "Last 30 days",
   "90": "Last 90 days",
+  "365": "This year",
+  custom: "Custom range",
   all: "All time",
 } as const;
 
@@ -103,11 +108,13 @@ function bucketize(dates: string[], days: number | null) {
 
 function Overview() {
   const [range, setRange] = useState<keyof typeof ranges>("30");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
 
   const q = useQuery({
     queryKey: ["admin-overview"],
     queryFn: async () => {
-      const [apps, inquiries, activity, reviews, followups] = await Promise.all([
+      const [apps, inquiries, devices, activity, reviews, followups] = await Promise.all([
         supabase
           .from("hospital_applications")
           .select(
@@ -120,6 +127,11 @@ function Overview() {
           .select("id, status, submitted_at")
           .order("submitted_at", { ascending: false })
           .limit(500),
+        supabase
+          .from("device_requests")
+          .select("id, status, device_category, gps_quantity, dashcam_quantity, created_at")
+          .order("created_at", { ascending: false })
+          .limit(1000),
         supabase
           .from("admin_audit_logs")
           .select("id, action, created_at, metadata")
@@ -138,22 +150,40 @@ function Overview() {
           .order("follow_up_date")
           .limit(20),
       ]);
-      if (apps.error || activity.error) throw new Error("load failed");
-      // Newer migrations land separately — tolerate until applied.
+      // Permission-scoped roles may not access every module. The overview keeps
+      // authorized cards available and treats restricted modules as empty.
+      const appRows = apps.error ? [] : (apps.data ?? []);
       const inquiryRows = inquiries.error ? [] : (inquiries.data ?? []);
+      const deviceRows = devices.error ? [] : (devices.data ?? []);
+      const activityRows = activity.error ? [] : (activity.data ?? []);
       const reviewRows = reviews.error ? [] : (reviews.data ?? []);
       const followupRows = followups.error ? [] : (followups.data ?? []);
       return {
-        apps: apps.data,
+        apps: appRows,
         inquiries: inquiryRows,
-        activity: activity.data,
+        devices: deviceRows,
+        activity: activityRows,
         reviews: reviewRows,
         followups: followupRows,
       };
     },
   });
 
-  const since = range === "all" ? null : Date.now() - Number(range) * 864e5;
+  const since =
+    range === "all"
+      ? null
+      : range === "custom"
+        ? customFrom
+          ? new Date(`${customFrom}T00:00:00`).getTime()
+          : null
+        : Date.now() - Number(range) * 864e5;
+  const until = range === "custom" && customTo ? new Date(`${customTo}T23:59:59`).getTime() : null;
+  const chartDays =
+    range === "all"
+      ? null
+      : range === "custom" && since
+        ? Math.max(1, Math.ceil(((until ?? Date.now()) - since) / 864e5))
+        : Number(range);
 
   const fmtDuration = (ms: number) => {
     const h = ms / 36e5;
@@ -163,9 +193,15 @@ function Overview() {
 
   const stats = useMemo(() => {
     if (!q.data) return null;
-    const { apps, inquiries, reviews, followups } = q.data;
-    const count = (s: AppStatus) => apps.filter((x) => x.status === s).length;
-    const total = apps.length;
+    const { apps, inquiries, devices, reviews, followups } = q.data;
+    const inRange = (date: string) =>
+      (since === null || new Date(date).getTime() >= since) &&
+      (until === null || new Date(date).getTime() <= until);
+    const rangedApps = apps.filter((item) => inRange(item.submitted_at));
+    const rangedInquiries = inquiries.filter((item) => inRange(item.submitted_at));
+    const rangedDevices = devices.filter((item) => inRange(item.created_at));
+    const count = (s: AppStatus) => rangedApps.filter((x) => x.status === s).length;
+    const total = rangedApps.length;
     const decided = count("approved") + count("rejected");
     const dayStart = new Date();
     dayStart.setHours(0, 0, 0, 0);
@@ -187,7 +223,22 @@ function Overview() {
       underReview: count("under_review") + count("changes_requested"),
       approved: count("approved"),
       rejected: count("rejected"),
-      newInquiries: inquiries.filter((i) => i.status === "new").length,
+      totalRequests: rangedInquiries.length + rangedDevices.length,
+      pendingRequests:
+        rangedInquiries.filter((i) => i.status !== "resolved").length +
+        rangedDevices.filter((item) =>
+          ["new", "pending", "under_review", "approved", "in_progress"].includes(item.status),
+        ).length,
+      completedRequests:
+        rangedInquiries.filter((i) => i.status === "resolved").length +
+        rangedDevices.filter((item) => item.status === "completed").length,
+      rejectedRequests: rangedDevices.filter((item) => item.status === "rejected").length,
+      deviceRequests: rangedDevices.length,
+      gpsRequests: rangedDevices.filter((item) => item.gps_quantity > 0).length,
+      dashcamRequests: rangedDevices.filter((item) => item.dashcam_quantity > 0).length,
+      gpsUnits: rangedDevices.reduce((sum, item) => sum + item.gps_quantity, 0),
+      dashcamUnits: rangedDevices.reduce((sum, item) => sum + item.dashcam_quantity, 0),
+      newInquiries: rangedInquiries.filter((i) => i.status === "new").length,
       approvalRate: decided === 0 ? null : Math.round((count("approved") / decided) * 100),
       today: apps.filter((a) => new Date(a.submitted_at).getTime() >= todayStart).length,
       month: apps.filter((a) => new Date(a.submitted_at) >= monthStart).length,
@@ -203,20 +254,20 @@ function Overview() {
         value: count(s),
       })),
       series: bucketize(
-        apps.map((a) => a.submitted_at),
-        range === "all" ? null : Number(range),
+        rangedApps.map((a) => a.submitted_at),
+        chartDays,
       ),
       reviewSeries: bucketize(
         reviews.map((r) => r.created_at),
-        range === "all" ? null : Number(range),
+        chartDays,
       ),
       inquiryMonths: bucketize(
-        inquiries.map((i) => i.submitted_at),
+        rangedInquiries.map((i) => i.submitted_at),
         180,
       ).slice(-6),
       followups,
     };
-  }, [q.data, range]);
+  }, [q.data, since, until, chartDays]);
 
   if (q.isLoading) return <Loading />;
   if (q.error || !q.data || !stats) return <ErrorNote onRetry={() => q.refetch()} />;
@@ -239,7 +290,7 @@ function Overview() {
       sub: "Being reviewed",
     },
     {
-      l: "Completed",
+      l: "Approved hospitals",
       v: stats.approved,
       icon: CheckCircle2,
       c: "text-success",
@@ -254,6 +305,41 @@ function Overview() {
       c: "text-primary",
       sub: stats.avgReview ? `${stats.avgReview} review time` : "No reviews timed yet",
     },
+    {
+      l: "Website requests",
+      v: stats.totalRequests,
+      icon: Inbox,
+      c: "text-navy",
+      sub: `${stats.pendingRequests} pending · ${stats.completedRequests} completed`,
+    },
+    {
+      l: "Device requests",
+      v: stats.deviceRequests,
+      icon: HardDrive,
+      c: "text-primary",
+      sub: `${stats.gpsUnits} GPS · ${stats.dashcamUnits} dashcam units`,
+    },
+    {
+      l: "GPS requests",
+      v: stats.gpsRequests,
+      icon: HardDrive,
+      c: "text-navy",
+      sub: `${stats.gpsUnits} units requested`,
+    },
+    {
+      l: "Dashcam requests",
+      v: stats.dashcamRequests,
+      icon: HardDrive,
+      c: "text-navy",
+      sub: `${stats.dashcamUnits} units requested`,
+    },
+    {
+      l: "Rejected requests",
+      v: stats.rejectedRequests,
+      icon: XCircle,
+      c: "text-primary",
+      sub: "Device requests only",
+    },
   ];
 
   return (
@@ -262,18 +348,38 @@ function Overview() {
         title="Overview"
         copy="Live website figures — applications, inquiries and admin activity."
         actions={
-          <select
-            aria-label="Date range"
-            className={inputCls}
-            value={range}
-            onChange={(e) => setRange(e.target.value as keyof typeof ranges)}
-          >
-            {Object.entries(ranges).map(([k, v]) => (
-              <option key={k} value={k}>
-                {v}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-wrap gap-2">
+            <select
+              aria-label="Date range"
+              className={inputCls}
+              value={range}
+              onChange={(e) => setRange(e.target.value as keyof typeof ranges)}
+            >
+              {Object.entries(ranges).map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ))}
+            </select>
+            {range === "custom" && (
+              <>
+                <input
+                  aria-label="Custom start date"
+                  type="date"
+                  className={inputCls}
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                />
+                <input
+                  aria-label="Custom end date"
+                  type="date"
+                  className={inputCls}
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                />
+              </>
+            )}
+          </div>
         }
       />
 
@@ -311,7 +417,14 @@ function Overview() {
             since ? (
               <span className="text-xs font-semibold text-muted-foreground">
                 {ranges[range]} ·{" "}
-                {apps.filter((a) => new Date(a.submitted_at).getTime() >= since).length} submissions
+                {
+                  apps.filter(
+                    (a) =>
+                      new Date(a.submitted_at).getTime() >= since &&
+                      (until === null || new Date(a.submitted_at).getTime() <= until),
+                  ).length
+                }{" "}
+                submissions
               </span>
             ) : undefined
           }

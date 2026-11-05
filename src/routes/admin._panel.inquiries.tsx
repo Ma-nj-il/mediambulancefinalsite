@@ -63,20 +63,8 @@ function Inquiries() {
 
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } =
-        status === "resolved"
-          ? await supabase
-              .from("contact_inquiries")
-              .update({ status, resolved_at: new Date().toISOString() })
-              .eq("id", id)
-          : await supabase.from("contact_inquiries").update({ status }).eq("id", id);
+      const { error } = await supabase.rpc("change_inquiry_status", { _id: id, _new: status });
       if (error) throw error;
-      await supabase.rpc("log_admin_action", {
-        _action: `inquiry.status.${status}`,
-        _entity_type: "contact_inquiry",
-        _entity_id: id,
-        _metadata: {},
-      });
     },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["admin-inquiries"] });

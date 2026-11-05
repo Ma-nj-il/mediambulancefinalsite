@@ -1,6 +1,6 @@
 /**
- * Seeds the initial administrator. Run once: `bun scripts/seed-admin.ts`
- * Reads ADMIN_SEED_USERNAME / ADMIN_SEED_PASSWORD (defaults: admin / admin123 for development only).
+ * Seeds the initial administrator. Run once: `npm run seed:admin`
+ * Reads ADMIN_SEED_USERNAME / ADMIN_SEED_PASSWORD from the secure server environment.
  * The seeded admin is flagged must_change_password and is prompted to replace it after first sign-in.
  */
 import { createClient } from "@supabase/supabase-js";
@@ -10,7 +10,8 @@ const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
 if (!url || !key) throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
 
 const username = (process.env["ADMIN_SEED_USERNAME"] ?? "admin").toLowerCase();
-const password = process.env["ADMIN_SEED_PASSWORD"] ?? "admin123";
+const password = process.env["ADMIN_SEED_PASSWORD"];
+if (!password) throw new Error("ADMIN_SEED_PASSWORD is required");
 const email = `${username}@admin.resq.local`;
 
 const db = createClient(url, key, { auth: { persistSession: false } });
@@ -25,6 +26,13 @@ if (!user) {
 } else {
   console.log("Admin user already exists", username);
 }
-await db.from("user_roles").upsert({ user_id: user.id, role: "admin" }, { onConflict: "user_id,role" });
-await db.from("admin_profiles").upsert({ user_id: user.id, username, display_name: "Administrator" }, { onConflict: "user_id", ignoreDuplicates: true });
+await db
+  .from("user_roles")
+  .upsert({ user_id: user.id, role: "admin" }, { onConflict: "user_id,role" });
+await db
+  .from("admin_profiles")
+  .upsert(
+    { user_id: user.id, username, display_name: "Administrator" },
+    { onConflict: "user_id", ignoreDuplicates: true },
+  );
 console.log("Seed complete");

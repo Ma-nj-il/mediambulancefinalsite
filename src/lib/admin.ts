@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 export type AppStatus = Database["public"]["Enums"]["application_status"];
+export type RequestStatus = Database["public"]["Enums"]["website_request_status"];
 export type Application = Database["public"]["Tables"]["hospital_applications"]["Row"];
 
 export const usernameToEmail = (u: string) => {
@@ -18,6 +19,12 @@ export async function getAdminSession() {
     _role: "admin",
   });
   if (!isAdmin) return null;
+  const { data: profile } = await supabase
+    .from("admin_profiles")
+    .select("is_active")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+  if (!profile?.is_active) return null;
   return data.user;
 }
 
@@ -27,6 +34,17 @@ export const statusMeta: Record<AppStatus, { label: string; cls: string }> = {
   changes_requested: { label: "Changes Requested", cls: "bg-warning/20 text-navy" },
   approved: { label: "Completed", cls: "bg-success/15 text-success" },
   rejected: { label: "Rejected", cls: "bg-accent text-primary" },
+};
+
+export const requestStatusMeta: Record<RequestStatus, { label: string; cls: string }> = {
+  new: { label: "New", cls: "bg-warning/20 text-navy" },
+  pending: { label: "Pending", cls: "bg-warning/20 text-navy" },
+  under_review: { label: "Under Review", cls: "bg-secondary text-navy" },
+  approved: { label: "Approved", cls: "bg-success/15 text-success" },
+  rejected: { label: "Rejected", cls: "bg-accent text-primary" },
+  in_progress: { label: "In Progress", cls: "bg-secondary text-navy" },
+  completed: { label: "Completed", cls: "bg-success/15 text-success" },
+  cancelled: { label: "Cancelled", cls: "bg-muted text-muted-foreground" },
 };
 
 export const fmtDate = (d: string | null) =>

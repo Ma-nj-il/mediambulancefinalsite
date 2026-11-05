@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { parseFormPayload } from "@/lib/form-payload";
 
 /** Single source of truth for contact-inquiry validation — form and server agree. */
 export const inquirySchema = z.object({
@@ -19,7 +20,7 @@ export const inquirySchema = z.object({
 export type InquiryStatus = "new" | "in_progress" | "resolved";
 
 export const submitContactInquiry = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => {
+  .validator((data: unknown) => {
     if (!(data instanceof FormData)) throw new Error("Invalid submission");
     return data;
   })
@@ -28,7 +29,7 @@ export const submitContactInquiry = createServerFn({ method: "POST" })
 
     let parsed: z.infer<typeof inquirySchema>;
     try {
-      parsed = inquirySchema.parse(JSON.parse(String(data.get("payload") ?? "{}")));
+      parsed = inquirySchema.parse(parseFormPayload(data));
     } catch {
       return {
         ok: false as const,
@@ -40,12 +41,14 @@ export const submitContactInquiry = createServerFn({ method: "POST" })
 
     // Duplicate protection: same email + message within 10 minutes.
     const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    const { count } = await supabaseAdmin
+    const { count, error: duplicateError } = await supabaseAdmin
       .from("contact_inquiries")
       .select("id", { count: "exact", head: true })
       .ilike("email", parsed.email)
       .eq("message", parsed.message)
       .gte("submitted_at", since);
+    if (duplicateError)
+      return { ok: false as const, error: "We couldn't verify recent messages. Please try again." };
     if ((count ?? 0) > 0) {
       return {
         ok: false as const,

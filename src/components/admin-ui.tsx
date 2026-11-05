@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Inbox, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { statusMeta, type AppStatus } from "@/lib/admin";
+import { requestStatusMeta, statusMeta, type AppStatus, type RequestStatus } from "@/lib/admin";
 
 export function StatusBadge({ status }: { status: AppStatus }) {
   const m = statusMeta[status];
@@ -13,6 +13,20 @@ export function StatusBadge({ status }: { status: AppStatus }) {
       )}
     >
       {m.label}
+    </span>
+  );
+}
+
+export function RequestStatusBadge({ status }: { status: RequestStatus }) {
+  const meta = requestStatusMeta[status];
+  return (
+    <span
+      className={cn(
+        "inline-flex whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold",
+        meta.cls,
+      )}
+    >
+      {meta.label}
     </span>
   );
 }
@@ -78,10 +92,12 @@ export function EmptyState({
   title,
   copy,
   icon,
+  action,
 }: {
   title: string;
   copy?: string;
   icon?: ReactNode;
+  action?: ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -90,6 +106,7 @@ export function EmptyState({
       </span>
       <p className="mt-4 font-bold text-navy">{title}</p>
       {copy && <p className="mt-1 max-w-sm text-sm text-muted-foreground">{copy}</p>}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
@@ -102,10 +119,10 @@ export function Loading() {
   );
 }
 
-export function ErrorNote({ onRetry }: { onRetry?: () => void }) {
+export function ErrorNote({ message, onRetry }: { message?: string; onRetry?: () => void }) {
   return (
     <div className="rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-primary">
-      Couldn't load data.{" "}
+      {message || "Couldn't load data."}{" "}
       {onRetry && (
         <button className="underline" onClick={onRetry}>
           Retry

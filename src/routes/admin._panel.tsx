@@ -6,12 +6,16 @@ import {
   Building2,
   ChevronDown,
   ClipboardList,
+  FileBarChart,
+  HardDrive,
   Inbox,
   LayoutGrid,
   LogOut,
   Menu,
   Settings,
+  ScrollText,
   User,
+  UsersRound,
   X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,11 +34,52 @@ export const Route = createFileRoute("/admin/_panel")({
 });
 
 const items = [
-  { to: "/admin/dashboard", label: "Overview", icon: LayoutGrid },
-  { to: "/admin/applications", label: "Hospital Applications", icon: ClipboardList },
-  { to: "/admin/hospitals", label: "Approved Hospitals", icon: Building2 },
-  { to: "/admin/inquiries", label: "Contact Inquiries", icon: Inbox },
-  { to: "/admin/settings", label: "Admin Settings", icon: Settings },
+  { to: "/admin/dashboard", label: "Dashboard", icon: LayoutGrid },
+  {
+    to: "/admin/applications",
+    label: "Hospital Applications",
+    icon: ClipboardList,
+    roles: ["super_admin", "application_manager", "report_viewer"],
+  },
+  {
+    to: "/admin/hospitals",
+    label: "Approved Hospitals",
+    icon: Building2,
+    roles: ["super_admin", "application_manager", "report_viewer"],
+  },
+  {
+    to: "/admin/requests",
+    label: "All Requests",
+    icon: Inbox,
+    roles: ["super_admin", "report_viewer"],
+  },
+  {
+    to: "/admin/device-requests",
+    label: "GPS & Device Requests",
+    icon: HardDrive,
+    roles: ["super_admin", "request_manager", "report_viewer"],
+  },
+  {
+    to: "/admin/inquiries",
+    label: "Contact Inquiries",
+    icon: Inbox,
+    roles: ["super_admin", "request_manager", "report_viewer"],
+  },
+  { to: "/admin/notifications", label: "Notifications", icon: Bell },
+  {
+    to: "/admin/reports",
+    label: "Reports & Analytics",
+    icon: FileBarChart,
+    roles: ["super_admin", "report_viewer"],
+  },
+  {
+    to: "/admin/audit",
+    label: "Activity Logs",
+    icon: ScrollText,
+    roles: ["super_admin", "report_viewer"],
+  },
+  { to: "/admin/users", label: "Admin Users", icon: UsersRound, roles: ["super_admin"] },
+  { to: "/admin/settings", label: "Settings", icon: Settings },
 ] as const;
 
 function useCloseOnOutside(ref: React.RefObject<HTMLElement | null>, onClose: () => void) {
@@ -69,29 +114,42 @@ function PanelLayout() {
   const { data: alerts } = useQuery({
     queryKey: ["admin-alerts"],
     queryFn: async () => {
-      const [pending, inquiries] = await Promise.all([
+      const [notifications, unread] = await Promise.all([
         supabase
-          .from("hospital_applications")
-          .select("id, hospital_name, submitted_at", { count: "exact" })
-          .eq("status", "pending")
-          .order("submitted_at", { ascending: false })
-          .limit(4),
+          .from("admin_notification_inbox")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(8),
         supabase
-          .from("contact_inquiries")
-          .select("id, name, subject, submitted_at", { count: "exact" })
-          .eq("status", "new")
-          .order("submitted_at", { ascending: false })
-          .limit(4),
+          .from("admin_notification_inbox")
+          .select("id", { count: "exact", head: true })
+          .is("read_at", null),
       ]);
+      if (notifications.error) throw notifications.error;
+      if (unread.error) throw unread.error;
       return {
-        pendingCount: pending.count ?? 0,
-        newCount: inquiries.count ?? 0,
-        pending: pending.data ?? [],
-        inquiries: inquiries.data ?? [],
+        rows: notifications.data ?? [],
+        unreadCount: unread.count ?? 0,
       };
     },
   });
-  const totalAlerts = (alerts?.pendingCount ?? 0) + (alerts?.newCount ?? 0);
+  const totalAlerts = alerts?.unreadCount ?? 0;
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-shell-notifications")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "admin_notifications" },
+        () => {
+          void qc.invalidateQueries({ queryKey: ["admin-alerts"] });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [qc]);
 
   const logout = async () => {
     await qc.cancelQueries();
@@ -102,21 +160,28 @@ function PanelLayout() {
 
   const nav = (
     <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label="Admin">
-      {items.map((it) => (
-        <Link
-          key={it.to}
-          to={it.to}
-          onClick={() => setOpen(false)}
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-navy transition-colors hover:bg-secondary"
-          activeProps={{
-            className:
-              "bg-gradient-to-br from-primary to-primary-deep font-semibold text-primary-foreground shadow-glow hover:bg-gradient-to-br",
-          }}
-        >
-          <it.icon className="h-4 w-4" />
-          {it.label}
-        </Link>
-      ))}
+      {items
+        .filter(
+          (it) =>
+            !("roles" in it) ||
+            !profile ||
+            (it.roles as readonly string[]).includes(profile.staff_role),
+        )
+        .map((it) => (
+          <Link
+            key={it.to}
+            to={it.to}
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-navy transition-colors hover:bg-secondary"
+            activeProps={{
+              className:
+                "bg-gradient-to-br from-primary to-primary-deep font-semibold text-primary-foreground shadow-glow hover:bg-gradient-to-br",
+            }}
+          >
+            <it.icon className="h-4 w-4" />
+            {it.label}
+          </Link>
+        ))}
     </nav>
   );
 
@@ -213,41 +278,27 @@ function PanelLayout() {
                     </p>
                   ) : (
                     <div className="max-h-72 space-y-1 overflow-y-auto">
-                      {(alerts?.pending ?? []).map((a) => (
+                      {(alerts?.rows ?? []).slice(0, 8).map((alert) => (
                         <Link
-                          key={a.id}
-                          to="/admin/applications/$id"
-                          params={{ id: a.id }}
+                          key={alert.id}
+                          to="/admin/notifications"
                           onClick={() => setBellOpen(false)}
                           className="block rounded-xl px-2 py-2 text-sm hover:bg-secondary"
                         >
-                          <span className="font-bold text-navy">{a.hospital_name}</span>
-                          <span className="block text-xs text-muted-foreground">
-                            Pending application
-                          </span>
-                        </Link>
-                      ))}
-                      {(alerts?.inquiries ?? []).map((q) => (
-                        <Link
-                          key={q.id}
-                          to="/admin/inquiries"
-                          onClick={() => setBellOpen(false)}
-                          className="block rounded-xl px-2 py-2 text-sm hover:bg-secondary"
-                        >
-                          <span className="font-bold text-navy">{q.subject}</span>
-                          <span className="block text-xs text-muted-foreground">
-                            New inquiry from {q.name}
+                          <span className="font-bold text-navy">{alert.title}</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {alert.description}
                           </span>
                         </Link>
                       ))}
                     </div>
                   )}
                   <Link
-                    to="/admin/applications"
+                    to="/admin/notifications"
                     onClick={() => setBellOpen(false)}
                     className="mt-1 block rounded-xl bg-secondary px-2 py-2 text-center text-sm font-bold text-navy"
                   >
-                    Review applications
+                    View all notifications
                   </Link>
                 </div>
               )}

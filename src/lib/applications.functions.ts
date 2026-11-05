@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { AMBULANCE_TYPES, GPS_METHODS, registrationSchema } from "@/lib/registration";
+import { parseFormPayload } from "@/lib/form-payload";
 
 export const DOC_TYPES = {
   hospital_registration: "Hospital registration document",
@@ -9,7 +10,7 @@ export const DOC_TYPES = {
 } as const;
 
 export const submitHospitalApplication = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => {
+  .validator((data: unknown) => {
     if (!(data instanceof FormData)) throw new Error("Invalid submission");
     return data;
   })
@@ -29,7 +30,7 @@ export const submitHospitalApplication = createServerFn({ method: "POST" })
       ambulanceTypes: (typeof AMBULANCE_TYPES)[number]["value"][];
     };
     try {
-      parsed = registrationSchema.parse(JSON.parse(String(data.get("payload") ?? "{}")));
+      parsed = registrationSchema.parse(parseFormPayload(data));
     } catch {
       return {
         ok: false as const,
@@ -41,11 +42,16 @@ export const submitHospitalApplication = createServerFn({ method: "POST" })
 
     // Duplicate protection: one open application per phone number within 10 minutes.
     const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    const { count } = await supabaseAdmin
+    const { count, error: duplicateError } = await supabaseAdmin
       .from("hospital_applications")
       .select("id", { count: "exact", head: true })
       .eq("phone", parsed.phone)
       .gte("submitted_at", since);
+    if (duplicateError)
+      return {
+        ok: false as const,
+        error: "We couldn't verify recent applications. Please try again.",
+      };
     if ((count ?? 0) > 0) {
       return {
         ok: false as const,

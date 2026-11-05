@@ -1,13 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppSection, Categories, DashboardSection, EmergencyMoment, Faq, FinalCta, Hero, HospitalsSection, HowItWorks, JoinSteps, TrackingSection, Trust, WhyResq } from "@/components/sections";
+import {
+  AppSection,
+  Categories,
+  DashboardSection,
+  EmergencyMoment,
+  Faq,
+  FinalCta,
+  ForHospitalsSection,
+  Hero,
+  HospitalsSection,
+  HowItWorks,
+  JoinSteps,
+  ProvidersSection,
+  Trust,
+  WhyResq,
+} from "@/components/sections";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RESQ Nepal — Emergency Help, Just a Tap Away" },
-      { name: "description", content: "Find and request ambulance services through RESQ Nepal, a connected network of participating hospitals and ambulance providers." },
-      { property: "og:title", content: "RESQ Nepal — Emergency Help, Just a Tap Away" },
-      { property: "og:description", content: "A smarter way to connect with ambulance services in Nepal." },
+      { title: "RESQ Nepal — Ambulance Management & Emergency Response" },
+      {
+        name: "description",
+        content:
+          "RESQ Nepal connects patients, hospitals, and ambulance teams through mobile ambulance access and a centralized hospital operations platform.",
+      },
+      { property: "og:title", content: "RESQ Nepal — Smarter Ambulance Management" },
+      {
+        property: "og:description",
+        content:
+          "Integrated ambulance access, hospital fleet management, and emergency response operations.",
+      },
     ],
   }),
   component: Index,
@@ -17,12 +40,13 @@ function Index() {
   return (
     <>
       <Hero />
+      <HospitalsSection />
+      <ForHospitalsSection />
+      <DashboardSection />
+      <AppSection />
       <EmergencyMoment />
       <HowItWorks />
-      <AppSection />
-      <HospitalsSection />
-      <DashboardSection />
-      <TrackingSection />
+      <ProvidersSection />
       <Categories />
       <WhyResq />
       <Trust />

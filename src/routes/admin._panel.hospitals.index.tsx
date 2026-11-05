@@ -13,9 +13,9 @@ import {
   inputCls,
   theadCls,
 } from "@/components/admin-ui";
-import { fmtDate } from "@/lib/admin";
+import { fmtDate, friendlyError } from "@/lib/admin";
 
-export const Route = createFileRoute("/admin/_panel/hospitals")({
+export const Route = createFileRoute("/admin/_panel/hospitals/")({
   head: () => ({ meta: [{ title: "Registered Hospitals — RESQ Admin" }] }),
   component: Hospitals,
 });
@@ -88,11 +88,19 @@ function Hospitals() {
         {q.isLoading ? (
           <Loading />
         ) : q.error || !q.data ? (
-          <ErrorNote onRetry={() => q.refetch()} />
+          <ErrorNote message={friendlyError(q.error)} onRetry={() => q.refetch()} />
         ) : q.data.rows.length === 0 ? (
           <EmptyState
-            title="No registered hospitals yet"
-            copy="Approved applications will appear here as registered partners."
+            title="No approved hospitals yet"
+            copy="Review a pending hospital application and complete its verification checklist before approval."
+            action={
+              <Link
+                to="/admin/applications"
+                className="rounded-xl bg-navy px-4 py-2 text-sm font-bold text-navy-foreground"
+              >
+                Review applications
+              </Link>
+            }
           />
         ) : (
           <>
